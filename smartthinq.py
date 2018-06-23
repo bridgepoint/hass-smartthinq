@@ -80,8 +80,7 @@ class LGDevice(climate.ClimateDevice):
         return (
             climate.SUPPORT_TARGET_TEMPERATURE |
             climate.SUPPORT_OPERATION_MODE |
-            climate.SUPPORT_ON_OFF | 
-            climate.SUPPORT_SET_FAN_MODE
+            climate.SUPPORT_ON_OFF
         )
 
     @property
