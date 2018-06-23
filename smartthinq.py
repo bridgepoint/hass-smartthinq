@@ -22,20 +22,6 @@ MODES = {
     'ACO': climate.STATE_AUTO
 }
 
-# FAN_SPEEDS = {
-#         SLOW = '@AC_MAIN_WIND_STRENGTH_SLOW_W'
-#     SLOW_LOW = '@AC_MAIN_WIND_STRENGTH_SLOW_LOW_W'
-#     LOW = '@AC_MAIN_WIND_STRENGTH_LOW_W'
-#     LOW_MID = '@AC_MAIN_WIND_STRENGTH_LOW_MID_W'
-#     MID = '@AC_MAIN_WIND_STRENGTH_MID_W'
-#     MID_HIGH = '@AC_MAIN_WIND_STRENGTH_MID_HIGH_W'
-#     HIGH = '@AC_MAIN_WIND_STRENGTH_HIGH_W'
-#     POWER = '@AC_MAIN_WIND_STRENGTH_POWER_W'
-#     AUTO = '@AC_MAIN_WIND_STRENGTH_AUTO_W'
-
-# }
-
-
 MAX_RETRIES = 5
 TRANSIENT_EXP = 5.0  # Report set temperature for 5 seconds.
 TEMP_MIN_F = 60  # Guessed from actual behavior: API reports are unreliable.
@@ -73,9 +59,9 @@ class LGDevice(climate.ClimateDevice):
         self._transient_temp = None
         self._transient_time = None
 
+        # Store supported fan speeds
         device_info = device.load_model_info()
         supported_fan_speeds = device_info['Value']['SupportWindStrength']['option']
-
         self._supported_fan_speeds = {v: k for k, v in supported_fan_speeds.items()}
 
         self.update()
