@@ -21,6 +21,21 @@ MODES = {
     'ENERGY_SAVING': climate.STATE_ECO,
     'ACO': climate.STATE_AUTO
 }
+
+# FAN_SPEEDS = {
+#         SLOW = '@AC_MAIN_WIND_STRENGTH_SLOW_W'
+#     SLOW_LOW = '@AC_MAIN_WIND_STRENGTH_SLOW_LOW_W'
+#     LOW = '@AC_MAIN_WIND_STRENGTH_LOW_W'
+#     LOW_MID = '@AC_MAIN_WIND_STRENGTH_LOW_MID_W'
+#     MID = '@AC_MAIN_WIND_STRENGTH_MID_W'
+#     MID_HIGH = '@AC_MAIN_WIND_STRENGTH_MID_HIGH_W'
+#     HIGH = '@AC_MAIN_WIND_STRENGTH_HIGH_W'
+#     POWER = '@AC_MAIN_WIND_STRENGTH_POWER_W'
+#     AUTO = '@AC_MAIN_WIND_STRENGTH_AUTO_W'
+
+# }
+
+
 MAX_RETRIES = 5
 TRANSIENT_EXP = 5.0  # Report set temperature for 5 seconds.
 TEMP_MIN_F = 60  # Guessed from actual behavior: API reports are unreliable.
@@ -58,6 +73,11 @@ class LGDevice(climate.ClimateDevice):
         self._transient_temp = None
         self._transient_time = None
 
+        device_info = device.load_model_info()
+        supported_fan_speeds = device_info['Value']['SupportWindStrength']['option']
+
+        self._supported_fan_speeds = {v: k for k, v in supported_fan_speeds.items()}
+
         self.update()
 
     @property
@@ -80,8 +100,24 @@ class LGDevice(climate.ClimateDevice):
         return (
             climate.SUPPORT_TARGET_TEMPERATURE |
             climate.SUPPORT_OPERATION_MODE |
-            climate.SUPPORT_ON_OFF
+            climate.SUPPORT_ON_OFF | 
+            climate.SUPPORT_FAN_MODE
         )
+
+    @property
+    def fan_list(self):
+        import wideq
+
+        inv_acfanspeed = {v.value: v.name for v in wideq.ACFanSpeed}
+
+        modes = []
+
+        for v in self._supported_fan_speeds:
+            if v != "@NON":
+                mode = wideq.ACFanSpeed[inv_acfanspeed[v]]
+                modes.append(mode.name)
+
+        return modes
 
     @property
     def min_temp(self):
@@ -158,6 +194,14 @@ class LGDevice(climate.ClimateDevice):
         else:
             self._ac.set_celsius(temperature)
         LOGGER.info('Temperature set.')
+
+    def set_fan_mode(self, fan_speed):
+        import wideq
+        speed = wideq.ACFanSpeed[fan_speed]
+        LOGGER.info('Setting fan speed to %s...', speed)
+        self._ac.set_fan_speed(speed)
+        LOGGER.info('Fan speed set')
+
 
     def turn_on(self):
         LOGGER.info('Turning on...')
