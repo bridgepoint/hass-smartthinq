@@ -41,7 +41,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
 
 class LGDevice(climate.ClimateDevice):
-    def __init__(self, client, device, fahrenheit=True):
+    def __init__(self, client, device, fahrenheit=False):
         self._client = client
         self._device = device
         self._fahrenheit = fahrenheit
